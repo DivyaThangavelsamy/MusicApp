@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Music App</string>
+    <string name="no_data">No Artists Found</string>
+    <string name="api_key">d9a47843d1d7a8e10131e87af4218764</string>
+</resources>
