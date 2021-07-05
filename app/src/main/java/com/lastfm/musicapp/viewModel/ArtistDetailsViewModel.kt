@@ -9,10 +9,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import java.text.NumberFormat
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-open class ArtistDetailsViewModel @Inject constructor(private val artistRepository: ArtistRepository) :
+class ArtistDetailsViewModel @Inject constructor(private val artistRepository: ArtistRepository) :
     ViewModel() {
 
     private var disposable: Disposable? = null
@@ -20,8 +22,8 @@ open class ArtistDetailsViewModel @Inject constructor(private val artistReposito
     private val _artistsDetails = MutableLiveData<ArtistDetails>()
     val artistsDetails: MutableLiveData<ArtistDetails> = _artistsDetails
 
-    private val _artistsPlayCount = MutableLiveData<Int>()
-    val artistsPlayCount: MutableLiveData<Int> = _artistsPlayCount
+    private val _artistsPlayCount = MutableLiveData<String>()
+    val artistsPlayCount: MutableLiveData<String> = _artistsPlayCount
 
     private val _artistsSummary = MutableLiveData<String>()
     val artistsSummary: MutableLiveData<String> = _artistsSummary
@@ -52,7 +54,15 @@ open class ArtistDetailsViewModel @Inject constructor(private val artistReposito
 
     fun setArtistDetails(data: ArtistDetails) {
         _artistsDetails.postValue(data)
-        _artistsPlayCount.postValue(data.artist.statistics.playCount ?: 0)
+         var playCount = data.artist.statistics.playCount
+
+       /* // This can also be done in scope function however that's not a replacement for if-else
+        playCount?.let {
+           _artistsPlayCount.postValue(NumberFormat.getNumberInstance(Locale.US).format(playCount))
+        } ?: _artistsPlayCount.postValue("N/A") */
+
+        artistsPlayCount.postValue(if(playCount != null) NumberFormat.getNumberInstance(Locale.US).format(playCount) else "N/A")
+
         _artistsSummary.postValue(data.artist.bio?.summary ?: "N/A")
         progressBar.value = false
     }

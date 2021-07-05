@@ -9,6 +9,8 @@ import com.bumptech.glide.Glide
 import com.lastfm.musicapp.R
 import com.lastfm.musicapp.databinding.ListArtistBinding
 import com.lastfm.musicapp.model.TopArtist
+import java.text.NumberFormat
+import java.util.*
 import javax.inject.Inject
 
 class ArtistListAdapter @Inject constructor(private val context: Context) :
@@ -34,7 +36,7 @@ class ArtistListAdapter @Inject constructor(private val context: Context) :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val artists = artists[position]
         holder.dataBinding.artistName.text = artists.name
-        "${artists.listeners ?: "N/A"} listerners".also { holder.dataBinding.listerners.text = it }
+        "${(NumberFormat.getNumberInstance(Locale.US).format(artists.listeners?.toInt())) ?: "N/A"} listerners".also { holder.dataBinding.listerners.text = it }
         Glide.with(holder.itemView.context)
             .load(artists.image[2]?.text ?: R.drawable.ic_baseline_person_24)
             .into(holder.dataBinding.artistImage)

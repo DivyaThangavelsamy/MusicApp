@@ -72,6 +72,7 @@ class MainActivity : AppCompatActivity() {
                 viewModel.getSearchedArtist(query.trim())
                 return true
             }
+
             override fun onQueryTextChange(newText: String): Boolean {
                 return false
             }
