@@ -1,59 +1,73 @@
 package com.lastfm.musicapp.viewModel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.lastfm.musicapp.model.*
-import com.lastfm.musicapp.repository.MainRepository
-import com.lastfm.musicapp.service.WebService
+import com.lastfm.musicapp.model.Artists
+import com.lastfm.musicapp.model.SearchArtists
+import com.lastfm.musicapp.model.TopArtist
+import com.lastfm.musicapp.repository.ArtistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
 @HiltViewModel
-class MainActivityViewModel @Inject constructor(private val mainRepository: MainRepository)  : ViewModel() {
+class MainActivityViewModel @Inject constructor(private val artistRepository: ArtistRepository) :
+    ViewModel() {
 
     private var disposable: Disposable? = null
 
     private val _artists = MutableLiveData<List<TopArtist>>()
     val artists: MutableLiveData<List<TopArtist>> = _artists
 
-    private val _errorData  = MutableLiveData<String>()
-    val errorData : LiveData<String> = _errorData
+    private val _errorData = MutableLiveData<String>()
+    val errorData: LiveData<String> = _errorData
+
+    var progressBar = MutableLiveData<Boolean>()
 
     fun loadArtists() {
-        disposable = mainRepository.getTopArtist()
+        loadProgressBar()
+        disposable = artistRepository.getTopArtist()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { data -> onResponse(data) },
                 { error -> onFailure(error) })
     }
 
-    private fun onFailure(error: Throwable?) {
+    fun loadProgressBar() {
+        progressBar.value = true
+    }
+
+    fun onFailure(error: Throwable?) {
         _errorData.postValue(error.toString())
-        Log.d("Error", error.toString())
+        progressBar.value = false
     }
 
-    private fun onResponse(data: Artists) {
+    fun onResponse(data: Artists) {
+        setArtistDetails(data)
+    }
+
+    fun setArtistDetails(data: Artists) {
         _artists.postValue(data.artists.artist)
-        Log.d("Result", data.artists.artist[0].toString())
+        progressBar.value = false
     }
 
-
-    fun getSearchedArtist(artistName : String){
-        disposable = mainRepository.getArtistDetailsFromSerach(artistName)
+    fun getSearchedArtist(artistName: String) {
+        disposable = artistRepository.getArtistDetailsFromSearch(artistName)
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeOn(Schedulers.io())
             .subscribe(
                 { data -> onResponse(data) },
-                { error ->onFailure(error) })
+                { error -> onFailure(error) })
     }
 
-    private fun onResponse(data: SearchArtists) {
+    fun onResponse(data: SearchArtists) {
         _artists.postValue(data.artists.artists.artist)
-        Log.d("Result", data.toString())
+        progressBar.value = false
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        disposable?.dispose()
     }
 }

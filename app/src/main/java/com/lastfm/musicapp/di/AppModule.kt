@@ -2,8 +2,8 @@ package com.lastfm.musicapp.di
 
 import android.content.Context
 import com.lastfm.musicapp.BuildConfig.API_KEY
-import com.lastfm.musicapp.repository.MainRepository
-import com.lastfm.musicapp.repository.MainRepositoryImpl
+import com.lastfm.musicapp.repository.ArtistRepository
+import com.lastfm.musicapp.repository.ArtistRepositoryImpl
 import com.lastfm.musicapp.service.Constants
 import com.lastfm.musicapp.service.WebService
 import dagger.Binds
@@ -27,7 +27,6 @@ object AppModule {
 
             val originalRequest = chain.request()
             val originalHttpUrl: HttpUrl = originalRequest.url
-
 
             val url = originalHttpUrl.newBuilder()
                 .addQueryParameter("api_key", API_KEY)
@@ -73,9 +72,9 @@ object AppModule {
     }
 }
 
-    @Module
-    @InstallIn(SingletonComponent::class)
-    interface repositoryModules {
-        @Binds
-        fun provideRepositoryImpl(repository : MainRepositoryImpl) : MainRepository
-    }
+@Module
+@InstallIn(SingletonComponent::class)
+interface repositoryModules {
+    @Binds
+    fun provideRepositoryImpl(repository: ArtistRepositoryImpl): ArtistRepository
+}

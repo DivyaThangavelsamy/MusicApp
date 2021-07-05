@@ -1,14 +1,10 @@
 package com.lastfm.musicapp.viewModel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.lastfm.musicapp.model.Artist
 import com.lastfm.musicapp.model.ArtistDetails
-import com.lastfm.musicapp.model.Bio
-import com.lastfm.musicapp.repository.MainRepository
-import com.lastfm.musicapp.service.WebService
+import com.lastfm.musicapp.repository.ArtistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -16,18 +12,28 @@ import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
 @HiltViewModel
-class ArtistDetailsViewModel @Inject constructor(private val mainRepository: MainRepository) : ViewModel(){
+open class ArtistDetailsViewModel @Inject constructor(private val artistRepository: ArtistRepository) :
+    ViewModel() {
 
     private var disposable: Disposable? = null
 
-    private val _artistsDetails = MutableLiveData<Artist>()
-    val artistsDetails: MutableLiveData<Artist> = _artistsDetails
+    private val _artistsDetails = MutableLiveData<ArtistDetails>()
+    val artistsDetails: MutableLiveData<ArtistDetails> = _artistsDetails
 
-    private val _errorData  = MutableLiveData<String>()
-    val errorData : LiveData<String> = _errorData
+    private val _artistsPlayCount = MutableLiveData<Int>()
+    val artistsPlayCount: MutableLiveData<Int> = _artistsPlayCount
 
-    fun loadArtistsDetails(name : String) {
-        disposable = mainRepository.getArtistDetails(name)
+    private val _artistsSummary = MutableLiveData<String>()
+    val artistsSummary: MutableLiveData<String> = _artistsSummary
+
+    private val _errorData = MutableLiveData<String>()
+    val errorData: LiveData<String> = _errorData
+
+    var progressBar = MutableLiveData<Boolean>()
+
+    fun loadArtistsDetails(name: String) {
+        loadProgressBar()
+        disposable = artistRepository.getArtistDetails(name)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
@@ -35,12 +41,23 @@ class ArtistDetailsViewModel @Inject constructor(private val mainRepository: Mai
                 { error -> onFailure(error) })
     }
 
-    private fun onFailure(error: Throwable?) {
+    fun onFailure(error: Throwable?) {
         _errorData.postValue(error.toString())
-        Log.d("Error", error.toString())
+        progressBar.value = false
     }
 
-    private fun onResponse(data: ArtistDetails) {
-        _artistsDetails.postValue((data.artist))
+    fun onResponse(data: ArtistDetails) {
+        setArtistDetails(data)
+    }
+
+    fun setArtistDetails(data: ArtistDetails) {
+        _artistsDetails.postValue(data)
+        _artistsPlayCount.postValue(data.artist.statistics.playCount ?: 0)
+        _artistsSummary.postValue(data.artist.bio?.summary ?: "N/A")
+        progressBar.value = false
+    }
+
+    fun loadProgressBar() {
+        progressBar.value = true
     }
 }

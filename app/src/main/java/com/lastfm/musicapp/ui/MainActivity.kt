@@ -1,67 +1,58 @@
 package com.lastfm.musicapp.ui
 
-import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.View
-import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.lifecycle.Observer
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.lastfm.musicapp.R
 import com.lastfm.musicapp.databinding.ActivityMainBinding
+import com.lastfm.musicapp.extension.isNetworkAvailable
 import com.lastfm.musicapp.viewModel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
-import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.recyclerview.widget.GridLayoutManager
-import com.google.android.material.snackbar.Snackbar
-import com.lastfm.musicapp.extension.isNetworkAvailable
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var dataBinding: ActivityMainBinding
 
     private val viewModel: MainActivityViewModel by viewModels()
 
     private lateinit var adapter: ArtistListAdapter
     private lateinit var recyclerView: RecyclerView
     private lateinit var emptyText: TextView
-    private lateinit var progressBar: ProgressBar
     private lateinit var coordinatorLayout: CoordinatorLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        dataBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        dataBinding.lifecycleOwner = this
+        dataBinding.viewModel = viewModel
 
-        recyclerView = binding.recylerView
+        recyclerView = dataBinding.recylerView
         adapter = ArtistListAdapter(this)
         recyclerView.adapter = adapter
-        emptyText = binding.emptyTxt
-        progressBar = binding.progressBar
-        coordinatorLayout = binding.myCoordinatorLayout
+        emptyText = dataBinding.emptyTxt
+        coordinatorLayout = dataBinding.myCoordinatorLayout
 
         if (this.isNetworkAvailable()) {
             viewModel.loadArtists()
-            startProgress()
             viewModel.artists.observe(this, {
                 showEmptyList(it.isEmpty())
                 adapter.setArtistList(it)
                 recyclerView.visibility = View.VISIBLE
-                endProgress()
             })
         } else
             showError("Your Offline")
 
-
         viewModel.errorData.observe(this, { status ->
-            endProgress()
             status.let {
                 Toast.makeText(this, status, Toast.LENGTH_SHORT).show()
             }
@@ -81,21 +72,11 @@ class MainActivity : AppCompatActivity() {
                 viewModel.getSearchedArtist(query.trim())
                 return true
             }
-
             override fun onQueryTextChange(newText: String): Boolean {
                 return false
             }
         })
         return super.onCreateOptionsMenu(menu)
-    }
-
-    fun startProgress() {
-        emptyText.visibility = View.INVISIBLE
-        progressBar.visibility = View.VISIBLE
-    }
-
-    fun endProgress() {
-        progressBar.visibility = View.INVISIBLE
     }
 
     private fun showEmptyList(showList: Boolean) {
