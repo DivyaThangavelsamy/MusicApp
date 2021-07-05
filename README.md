@@ -11,11 +11,11 @@ Implemented basic search  - Searches the artists based on artist name and displa
 
 # Architecture
 
-Used MVVM Architecture
-Hilt for dependency injection
-Used Databinding
-Gide to render images
-Secured API Key by adding it in gradle.properties.
+- Used MVVM Architecture
+- Hilt for dependency injection
+- Used Databinding
+- Gide to render images
+- Secured API Key by adding it in gradle.properties.
 
 
 # How to run the APP
