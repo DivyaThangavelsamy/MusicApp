@@ -6,7 +6,6 @@ import com.lastfm.musicapp.repository.ArtistRepository
 import com.lastfm.musicapp.repository.ArtistRepositoryImpl
 import com.lastfm.musicapp.service.Constants
 import com.lastfm.musicapp.service.WebService
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -70,11 +69,10 @@ object AppModule {
     fun provideContext(@ApplicationContext appContext: Context): Context {
         return appContext
     }
-}
 
-@Module
-@InstallIn(SingletonComponent::class)
-interface repositoryModules {
-    @Binds
-    fun provideRepositoryImpl(repository: ArtistRepositoryImpl): ArtistRepository
+    @Provides
+    @Singleton
+    fun provideRepositoryImpl(repository: ArtistRepositoryImpl): ArtistRepository {
+        return repository
+    }
 }
