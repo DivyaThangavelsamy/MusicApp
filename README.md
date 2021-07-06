@@ -14,7 +14,7 @@ Implemented basic search  - Searches the artists based on artist name and displa
 - Used MVVM Architecture
 - Hilt for dependency injection
 - Used Databinding
-- Gide to render images
+- Glide to render images
 - Secured API Key by adding it in gradle.properties.
 
 
